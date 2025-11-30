@@ -1,77 +1,103 @@
-# sidebar
+# quick-mock-plus
 
-本项目是一个基于 Vue 3 和 Vite 开发的 Chrome 插件，用于自定义侧边栏。通过该插件，用户可以在侧边栏中展示个性化内容，提高浏览体验。
+轻量级接口模拟工具（Chrome 扩展），基于 Vue 3 + Vite + Element Plus。面向前端/联调场景，提供可视化的规则管理、JSON 树形编辑、AI 一键生成 Mock 数据，以及便捷的搜索与操作体验。
 
-特点:
+## 主要功能
 
-- 使用现代前端技术栈,提供流畅的用户体验
-- 利用 Vue 的强大生态系统
-- 自动化构建过程,一行命令轻松实现生成 crx 文件 和 文件信息
+- 规则管理
+  - URL 匹配：包含/完整匹配，支持请求方法 ALL/GET/POST/PUT/DELETE
+  - 备注、启用/禁用、删除、清空；更多操作集中于“···”下拉
+- Mock 响应
+  - JSON 树形编辑器，双击叶子即可编辑；即时保存到 `chrome.storage.local`
+  - 行内“Mock 响应”可折叠/展开，列表视图更干净
+  - 文本框工具条：格式化 / 验证 / 复制 / 清空；支持“⛶ 放大”弹窗查看编辑
+  - 流式生成时自动滚动到底部，跟随最新输出
+- AI 生成（DeepSeek）
+  - 输入接口类型/结构描述，SSE 流式生成 Mock JSON
+  - Token 失效（401/expired/invalid）：弹窗提示重新输入 API Key 并更新
+  - 额度不足（429/402/quota/limit）：明确错误提示，不再泛化
+- 搜索过滤
+  - 在“已添加规则”上方按“备注/URL”搜索；无结果时显示“查询结果为空”
+- UI 与概览
+  - 顶部概览卡：总规则、已启用、已禁用；数字居中，语义化配色
+  - 全局提示统一用 Element Plus `ElMessage`
 
-编辑器配置：
+## 快速开始
 
-1. 编辑器安装 ESLint 和 Prettier 插件
-2. 安装后,格式化使用 Prettier 格式
-3. 配置保存自动格式化
+### 环境要求
 
-## 环境要求
+- Node.js >= 20
+- 包管理器：pnpm
 
-node 版本 20
+### 安装依赖
 
-安装依赖：
+```
 pnpm install
+```
 
-## 项目结构
+### 开发调试
 
-CrxFile (首次打包插件后生成)
-├── packageName.crx # crx 文件
-├── packageName.pem # 证书
-├── output.log # crx 文件的详细信息
-├
-dist vue 项目打包结果
-├
-scripts node 脚本
-├── build-and-log-crx # 根据证书、vue 打包产物、crx 库件 自动化生成 crx 文件和日志文件
-src  
-├── api # API 请求相关  
-├── assets # 静态资源（图片、图标等）
-├── BackgroundScript # 插件后台脚本  
-├── components # 通用 Vue 组件  
-├── directives # 自定义 vue 指令
-├── enum # 枚举类型定义  
-├── hooks # 自定义 Hooks  
-├── http # HTTP 请求封装  
-├── mock # Mock 数据  
-├── router # 路由配置  
-├── store # 状态管理（pinia）  
-├── style # 样式文件  
-├── types # TypeScript  
-├── util # 工具函数  
-└── views # 视图组件  
- └── App.vue # 主应用组件
-
-## 开发
-
-启动开发服务器：
+```
 pnpm dev
+```
 
-如果在mac arm64 上运行报错(npm的一个已知bug导致的),请使用以下命令安装依赖:
+如在 mac arm64 遇到构建问题（npm 的已知问题），可尝试：
+
+```
 npm install @rollup/rollup-darwin-arm64
-或者
-删除package-lock.json文件,重新安装依赖
+```
 
-## 构建打包
+或删除 `package-lock.json` 后重装依赖。
 
-使用 `pnpm run chrome` 命令
+### 构建扩展
 
-执行成功后, CrxFile 文件夹中会有最新的 crx 文件和日志文件
+```
+pnpm run chrome
+```
 
-## Git Hooks 配置
+打包成功后，`CrxFile` 目录会生成最新的 `.crx` 和日志文件。
 
-在当前项目的根目录下,运行以下命令来设置文件的可执行权限:
+## 使用指南
 
-Windows系统:  
-attrib +x .husky/pre-commit
+1. 添加规则：选择匹配模式与方法，填写 URL 与备注，点击添加/保存
+2. AI 生成：在“AI 生成”输入接口类型/结构描述，点击“生成”，自动填充 Mock JSON
+3. 编辑数据：
+   - 列表中点击“Mock 响应”展开树形编辑器，双击叶子修改，实时保存
+   - 使用工具条进行“格式化/验证/复制/清空”；需要大视图时点击“⛶ 放大”
+4. 搜索与管理：在搜索框按“备注/URL”过滤；编辑/删除在“···”下拉菜单；清空支持二次确认
 
-Mac/Linux系统:  
-chmod +x .husky/pre-commit
+## DeepSeek API Key
+
+- 首次生成或缺失时会提示设置 API Key（保存在 `localStorage` 的 `DEEPSEEK_API_KEY`）
+- 失效/过期时（401/invalid/expired）：弹窗要求重新输入并更新 Key
+- 配额不足（429/402/quota/limit）：提示额度问题，请检查账户或稍后重试
+
+## 目录结构概览
+
+```
+CrxFile/                  # 打包产物（首次构建后生成）
+  ├─ packageName.crx      # 扩展包
+  ├─ packageName.pem      # 证书
+  └─ output.log           # 构建日志
+scripts/
+  └─ build-and-log-crx    # 自动生成 crx 与日志的脚本
+src/
+  ├─ views/AiMock/        # Mock 规则与编辑器
+  ├─ http/                # 请求封装
+  ├─ store/               # 状态（pinia）
+  ├─ style/               # 样式与主题
+  ├─ types/               # TypeScript 类型
+  └─ ...
+```
+
+## Git Hooks（可选）
+
+设置执行权限：
+
+- Windows：`attrib +x .husky/pre-commit`
+- macOS/Linux：`chmod +x .husky/pre-commit`
+
+## 备注
+
+- 开发模式下若遇到 “Extension context invalidated” 一般为扩展热重载导致，刷新页面或在 `chrome://extensions` 中重载扩展即可
+- 不建议在生产构建中依赖本地未持久化的 Key，必要时请在企业环境中走安全配置方案
